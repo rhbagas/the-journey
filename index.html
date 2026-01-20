@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>The Journey of My Heart - HEART BOOKS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Playfair+Display:wght@700;900&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-dark: #121111;
+            --primary-light: #fdfaf7;
+            --accent-gold: #d4a574;
+            --accent-soft: #8b7355;
+            --page-bg: #fdfaf7;
+            --shadow-color: rgba(0, 0, 0, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: radial-gradient(circle, #2a2826 0%, #0f0e0f 100%);
+            color: #333;
+            font-family: 'Cormorant Garamond', serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .bg-particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+        .particle { position: absolute; width: 2px; height: 2px; background: var(--accent-gold); border-radius: 50%; animation: float 15s infinite linear; opacity: 0.2; }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) scale(0); }
+            100% { transform: translateY(-10vh) scale(1.5); }
+        }
+
+        .book-wrapper {
+            width: 95%;
+            max-width: 1000px;
+            height: 600px;
+            perspective: 2000px;
+            position: relative;
+        }
+
+        .book-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+        }
+
+        .spine {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 100%;
+            background: linear-gradient(90deg, #3d2f20, #1a0f0a, #3d2f20);
+            z-index: 1000;
+            box-shadow: 0 0 25px rgba(0,0,0,0.6);
+        }
+
+        .page-pair {
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            right: 0;
+            transform-origin: left center;
+            transform-style: preserve-3d;
+            transition: transform 1.4s cubic-bezier(0.15, 0.9, 0.34, 1);
+            pointer-events: none;
+        }
+
+        .page-pair.active { pointer-events: all; }
+        .page-pair.flipped { transform: rotateY(-180deg) scale(1.01); }
+
+        .page-front, .page-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            backface-visibility: hidden;
+            padding: 40px 45px;
+            background: var(--page-bg);
+            border: 1px solid rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            background-image: linear-gradient(to right, rgba(0,0,0,0.05) 0%, transparent 10%, transparent 90%, rgba(0,0,0,0.02) 100%);
+        }
+
+        .page-back { transform: rotateY(180deg); border-radius: 15px 0 0 15px; }
+        .page-front { border-radius: 0 15px 15px 0; }
+
+        .page-content { display: flex; flex-direction: column; height: 100%; width: 100%; }
+
+        .page-lang {
+            font-family: 'Montserrat';
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            color: var(--accent-gold);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .page-title {
+            font-family: 'Playfair Display';
+            font-size: 1.6rem;
+            color: #4a3b33;
+            margin-bottom: 15px;
+            text-align: right;
+        }
+
+        .page-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #3d3532;
+            text-align: justify;
+        }
+
+        .page-image {
+            width: 100%;
+            height: 180px;
+            margin-top: auto;
+            border-radius: 8px;
+            object-fit: cover;
+            filter: sepia(0.3) contrast(0.9);
+            border: 4px solid white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-layer {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 2000;
+            align-items: center;
+        }
+
+        .nav-btn {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: 'Montserrat';
+            backdrop-filter: blur(10px);
+            transition: 0.3s;
+        }
+
+        .nav-btn:hover { background: var(--accent-gold); color: white; }
+
+        .music-toggle {
+            position: fixed; top: 25px; right: 25px;
+            width: 50px; height: 50px; border-radius: 50%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+            cursor: pointer; z-index: 2000;
+        }
+
+        @media (max-width: 768px) {
+            .book-wrapper { height: 75vh; }
+            .page-front, .page-back { padding: 25px; }
+            .page-title { font-size: 1.2rem; }
+            .page-text { font-size: 0.9rem; }
+            .page-image { height: 120px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-particles" id="particlesContainer"></div>
+    <button class="music-toggle" onclick="toggleMusic()" id="musicBtn">♫</button>
+
+    <div class="book-wrapper">
+        <div class="book-container" id="book">
+            <div class="spine"></div>
+            
+            <div class="page-pair active" id="page-cover" style="z-index: 100;">
+                <div class="page-front" style="background: linear-gradient(135deg, #eaddca, #fdfaf7);">
+                    <div style="height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                        <p style="letter-spacing: 5px; color: var(--accent-soft); margin-bottom: 20px;">MEMOIR</p>
+                        <h1 style="font-family: 'Playfair Display'; font-size: 2.8rem; color: #2a211a;">THE JOURNEY<br>OF MY HEART</h1>
+                        <div style="width: 50px; height: 1px; background: var(--accent-gold); margin: 30px 0;"></div>
+                        <p style="font-size: 0.8rem; opacity: 0.7; font-family: Montserrat;">STORY OF US</p>
+                    </div>
+                </div>
+                <div class="page-back">
+                    <div style="height: 100%; display: flex; align-items: center; justify-content: center; background: #f2ede4;">
+                        <p style="font-style: italic; color: var(--accent-soft);">To the one who holds my heart...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="dynamicPages"></div>
+
+            <div class="page-pair" id="page-ending">
+                <div class="page-front">
+                    <div class="page-content" style="justify-content: center; align-items: center; text-align: center;">
+                        <h2 class="page-title" style="text-align: center;">Epilogue</h2>
+                        <p class="page-text" style="text-align: center;">This is not the end of our story, but merely the beginning of a beautiful forever. Thank you for being my greatest adventure.</p>
+                    </div>
+                </div>
+                <div class="page-back" style="background: #1a1a1a;">
+                    <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--accent-gold);">
+                        <h2 style="font-family: 'Playfair Display'; font-size: 2rem;">The End</h2>
+                        <p style="font-family: Montserrat; font-size: 0.7rem; letter-spacing: 3px; margin-top: 20px;">MADE WITH LOVE</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-layer">
+        <button class="nav-btn" onclick="prevPage()">PREV</button>
+        <span id="pageIndicator" style="color: var(--accent-gold); font-family: Montserrat; font-weight: 600; min-width: 100px; text-align: center;">COVER</span>
+        <button class="nav-btn" onclick="nextPage()">NEXT</button>
+    </div>
+
+    <audio id="bgMusic" loop>
+        <source src="https://www.bensound.com/bensound-music/bensound-love.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        const entries = [
+            { 
+                titleEn: "Recognition", titleId: "Pengakuan", 
+                textEn: "In a world of billions, you are the only one my heart recognizes as home.", 
+                textId: "Di dunia yang dihuni miliaran manusia, hanya dirimu yang dikenali hatiku sebagai rumah.",
+                img: "images/pengakuan.jpg" // Sesuai gambar: pengakuan.jpg
+            },
+            { 
+                titleEn: "The Only One", titleId: "Satu-Satunya", 
+                textEn: "You are the silent answer to every prayer I never dared to speak aloud.", 
+                textId: "Engkau adalah jawaban sunyi bagi setiap doa yang tak pernah berani kuucapkan dengan lantang.",
+                img: "images/satu-satunya.jpg" // Sesuai gambar: satu-satunya.jpg
+            },
+            { 
+                titleEn: "The Pride", titleId: "Kebanggaan", 
+                textEn: "I wear my love for you like a badge of honor—I am proud to tell the world that you are mine.", 
+                textId: "Aku mengenakan cintaku padamu selayaknya lencana kehormatan—aku bangga menyatakan kepada dunia bahwa engkau milikku.",
+                img: "images/kebanggaan.jpg" // Sesuai gambar: kebanggaan.jpg (Perhatikan typo 'kebanggaan' di folder kamu)
+            },
+            { 
+                titleEn: "The Choice", titleId: "Pilihan", 
+                textEn: "You are not a choice I made by chance; you are the most deliberate decision my heart has ever made.", 
+                textId: "Engkau bukanlah pilihan yang kuambil secara kebetulan; engkau adalah keputusan paling sadar yang pernah dibuat oleh hatiku.",
+                img: "images/pilihan.jpg" // Sesuai gambar: pilihan.jpg
+            },
+            { 
+                titleEn: "The Forever Choice", titleId: "Pilihan Selamanya", 
+                textEn: "Every morning I wake up, I choose you again, and I will keep choosing you for all the tomorrows to come.", 
+                textId: "Setiap pagi aku terbangun, aku memilihmu kembali, dan aku akan terus memilihmu di setiap hari esok yang akan datang.",
+                img: "images/pilihan-selamanya.jpg" // Sesuai gambar: pilihan-selamanya.jpg
+            },
+            { 
+                titleEn: "The Treasure", titleId: "Harta Berharga", 
+                textEn: "Of all the riches in the world, your smile is the only wealth I ever wish to possess.", 
+                textId: "Dari segala kekayaan yang ada di dunia, senyummu adalah satu-satunya harta yang ingin aku miliki selamanya.",
+                img: "images/harta-berharga.jpg" // Sesuai gambar: harta-berharga.jpg
+            },
+            { 
+                titleEn: "The Vow", titleId: "Sumpah Setia", 
+                textEn: "To love you is my mission, to protect you is my duty, and to keep you happy is my life's purpose.", 
+                textId: "Mencintaimu adalah misiku, melindungimu adalah kewajibanku, dan menjagamu tetap bahagia adalah tujuan hidupku.",
+                img: "images/sumpah-setia.jpg" // Sesuai gambar: sumpah-setia.jpg
+            }
+        ];
+
+
+        let currentActive = -1; 
+        const totalSteps = entries.length + 1; // +1 for ending page
+
+        function initBook() {
+            const container = document.getElementById('dynamicPages');
+            container.innerHTML = entries.map((entry, idx) => `
+                <div class="page-pair" id="book-page-${idx}" style="z-index: ${entries.length + 1 - idx};">
+                    <div class="page-front">
+                        <div class="page-content">
+                            <div class="page-lang">ENGLISH VERSION</div>
+                            <h2 class="page-title">${entry.titleEn}</h2>
+                            <p class="page-text">${entry.textEn}</p>
+                        </div>
+                    </div>
+                    <div class="page-back">
+                        <div class="page-content">
+                            <div class="page-lang">VERSI INDONESIA</div>
+                            <h2 class="page-title">${entry.titleId}</h2>
+                            <p class="page-text">${entry.textId}</p>
+                            <img src="${entry.img}" class="page-image" alt="Love Visual">
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Re-order ending page z-index
+            document.getElementById('page-ending').style.zIndex = 0;
+        }
+
+        initBook();
+
+        function nextPage() {
+            if (currentActive === -1) {
+                flip('page-cover', true, 1);
+                currentActive++;
+            } else if (currentActive < entries.length) {
+                const id = currentActive === entries.length - 1 ? 'book-page-' + currentActive : 'book-page-' + currentActive;
+                if (currentActive === entries.length - 1) {
+                    flip('book-page-' + currentActive, true, currentActive + 2);
+                    // Ending page doesn't flip, it's just revealed
+                } else {
+                    flip('book-page-' + currentActive, true, currentActive + 2);
+                }
+                currentActive++;
+            }
+            updateIndicator();
+        }
+
+        function prevPage() {
+            if (currentActive === 0) {
+                flip('page-cover', false, 100);
+                currentActive--;
+            } else if (currentActive > 0) {
+                currentActive--;
+                flip('book-page-' + currentActive, false, entries.length - currentActive + 10);
+            }
+            updateIndicator();
+        }
+
+        function flip(id, isForward, zIndex) {
+            const el = document.getElementById(id);
+            if (isForward) {
+                el.classList.add('flipped');
+                setTimeout(() => { el.style.zIndex = zIndex; }, 700);
+            } else {
+                el.classList.remove('flipped');
+                el.style.zIndex = zIndex;
+            }
+        }
+
+        function updateIndicator() {
+            const indicator = document.getElementById('pageIndicator');
+            if (currentActive === -1) indicator.textContent = 'COVER';
+            else if (currentActive === entries.length) indicator.textContent = 'ENDING';
+            else indicator.textContent = `PAGE ${currentActive + 1}`;
+        }
+
+        let isPlaying = false;
+        function toggleMusic() {
+            const audio = document.getElementById('bgMusic');
+            if (isPlaying) audio.pause(); else audio.play().catch(e => {});
+            isPlaying = !isPlaying;
+            document.getElementById('musicBtn').style.background = isPlaying ? 'var(--accent-gold)' : 'rgba(0,0,0,0.3)';
+        }
+
+        const partCont = document.getElementById('particlesContainer');
+        for (let i = 0; i < 40; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.top = Math.random() * 100 + '%';
+            p.style.animationDelay = Math.random() * 15 + 's';
+            partCont.appendChild(p);
+        }
+    </script>
+</body>
+</html>
